@@ -296,6 +296,10 @@ Use the guide below only if you are stuck.
 
       `ros2 run turtlesim turtle_teleop_key`
 
+    - For reference, here is all the required tools and ROS 2 nodes needed to be run:
+
+    ![sim1](img/sim1.png)
+
 21. Now head over to the first terminal that is in the ws_offboard_control workspace, and run the executables from the package we created earlier.
 
       `ros2 run control_py controller`
