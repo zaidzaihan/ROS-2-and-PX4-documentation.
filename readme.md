@@ -1,67 +1,89 @@
-# BEGINNER GUIDE TO ROS 2 and PX4 DEVELOPMENT
+# Beginner guide to ROS 2 for PX4 development  
 
 ## This guide specifies the tasks needed to kick-start your PX4 development journeys using ROS 2
 
 ### Prerequisites
 
-1. Install **Ubuntu 22.04 LTS (Jammy Jellyfish)**
-2. Install **ROS 2 Humble**
-3. Go through ROS 2 Humble **Beginner: CLI Tools** tutorials
-4. Go through ROS 2 Humble **Beginner: Client Libraries** tutorials
-5. Installing **QGround Control**
-6. Installing and follows the **PX4: ROS 2 User Guide**
-7. Set up the **Micro XRCE-DDS** Agent and Client
-8. Build and run a **ROS 2 workspace**
+1. **Install Ubuntu 22.04 LTS (Jammy Jellyfish)**
+   - Ensure your system is set up with the necessary operating system.
+
+2. **Install ROS 2 Humble**
+   - Follow the official installation guide for ROS 2 Humble.
+
+3. **Complete ROS 2 Humble Beginner Tutorials**
+   - **CLI Tools**: Familiarize yourself with basic command-line tools.
+   - **Client Libraries**: Learn the basics of writing and running ROS 2 nodes using client libraries.
+
+4. **Install QGroundControl**
+   - Set up QGroundControl for UAV management and monitoring.
+
+5. **Follow the PX4: ROS 2 User Guide**
+   - Integrate ROS 2 with PX4 by following the official user guide.
+
+6. **Set up Micro XRCE-DDS Agent and Client**
+   - Install and configure the Micro XRCE-DDS communication bridge.
+
+7. **Build and Run a ROS 2 Workspace**
+   - Set up your ROS 2 workspace and ensure it is functional by building and running a sample project.
+
+---  
 
 ### Installing Ubuntu 22.04 LTS (Jammy Jellyfish)
 
-* Download the **Ubuntu 22.04 Desktop image** [**here**](https://releases.ubuntu.com/jammy/).
-* It is recommended to create a [**dual boot system**](https://www.freecodecamp.org/news/how-to-dual-boot-windows-10-and-ubuntu-linux-dual-booting-tutorial/) and allocate **at least 100GB** for Ubuntu 22.04 OS, as PX4 can require more than 40GB after installation.
+- Download the **Ubuntu 22.04 Desktop image** [here](https://releases.ubuntu.com/jammy/).
+- It is recommended to create a [dual boot system](https://www.freecodecamp.org/news/how-to-dual-boot-windows-10-and-ubuntu-linux-dual-booting-tutorial/) and allocate **at least 100GB** for Ubuntu 22.04 OS, as PX4 can require more than 40GB after installation.
+
+---  
 
 ### Installing ROS 2 Humble
 
-* Follow the ROS 2 Humble installation guide [**here**](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html).
+- Follow the ROS 2 Humble installation guide [here](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html).
 
-  **Note:** Test the installation by running the [**Talker-Listener example**](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html#talker-listener) provided on the **same page**.
+**Note:** Test the installation by running the [Talker-Listener example](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html#talker-listener) provided on the same page.
 
-### List of ROS 2 beginner tutorials
+---  
 
-You need to complete both ROS 2 beginner tutorials below before proceeding as the concepts is very important for the next step.
+### List of ROS 2 Beginner Tutorials
 
-* **ROS 2 Beginner: CLI Tools** guide:
+Complete both ROS 2 beginner tutorials below before proceeding, as the concepts are crucial for the next steps.
 
-  * Follow the **Beginner: CLI Tools** tutorials [**here**](https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools.html).
+#### **1. ROS 2 Beginner: CLI Tools Guide**
 
-  * Start from the [**Configuring environment**](https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Configuring-ROS2-Environment.html) section and continue until [**Launching nodes**](https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Launching-Multiple-Nodes/Launching-Multiple-Nodes.html).
+- Follow the **Beginner: CLI Tools** tutorials [here](https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools.html).
+- Start from the [**Configuring environment**](https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Configuring-ROS2-Environment.html) section and continue until [**Launching nodes**](https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Launching-Multiple-Nodes/Launching-Multiple-Nodes.html).
 
-    ![alt text](image-1.png)
+  ![CLI Tools Tutorial](img/image-1.png)
 
-* **ROS 2 Beginner: Client Libraries** guide:
+#### **2. ROS 2 Beginner: Client Libraries Guide**
 
-  * Follow the **Beginner: Client Libraries** documentation [**here**](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries.html).
+- Follow the **Beginner: Client Libraries** documentation [here](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries.html).
+- Start from [**Using `colcon` to build packages**](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html) and continue until [**Using parameters in a class**](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.html).
 
-  * Start from [using `colcon` to build packages](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html) and continue until [using parameters in a class](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.html).
+  ![Client Libraries Tutorial](img/image.png)
 
-    ![alt text](image.png)
+**Note:** Some of the tutorials above support the use of either **Python** or **C++** for implementation. **Choose** the programming language you are **most familiar** with.
 
-  **Note:** Some of the tutorials above support the use of either **Python** or **C++** for implementation. **Choose** the programming language you are **most familiar** with.
+---  
 
 ### Installing and Understanding PX4 and QGC
 
-1. Start by reading the PX4 ROS 2 Guide [**Introduction**](https://docs.px4.io/main/en/ros2/).
+1. Start by reading the **PX4 ROS 2** [**Introduction**](https://docs.px4.io/main/en/ros2/).
 
-2. Follow the Official PX4 ROS 2 guide [**here**](https://docs.px4.io/main/en/ros2/user_guide.html) to install PX4 and set up the **Micro XRCE-DDS Agent and Client**.
+2. Follow the Official **PX4 ROS 2 guide** [**here**](https://docs.px4.io/main/en/ros2/user_guide.html) to install PX4 and set up the **Micro XRCE-DDS Agent and Client**.
 
+    ![alt text](img/ros2_px4.png)
 3. Install **QGroundControl** for Ubuntu [**here**](https://docs.qgroundcontrol.com/master/en/qgc-user-guide/getting_started/download_and_install.html#ubuntu). You may read the QGC documentation on the same page.
 
 4. Read through the guide until [**here**](https://docs.px4.io/main/en/ros2/user_guide.html#ros-2-example-applications) to understand how to **write a ROS node** to listen to topics published by PX4.
 
-  **Note:** When following this [**guide**](https://docs.px4.io/main/en/ros2/user_guide.html), **skip** the [**Install ROS 2**](https://docs.px4.io/main/en/ros2/user_guide.html#install-ros-2) section as we have already installed it before.
+  **Note:** When following the [**guide**](https://docs.px4.io/main/en/ros2/user_guide.html), **skip** the [**Install ROS 2**](https://docs.px4.io/main/en/ros2/user_guide.html#install-ros-2) section as we have already installed it before.
 
-* **ROS 2 Offboard Control Example**
+- **ROS 2 Offboard Control Example**
 
-  * Run the **ROS 2 Offboard Control Example** provided on [**this page**](https://docs.px4.io/main/en/ros2/offboard_control.html) and try experimenting with the code. Remember to run `colcon build` each time you make changes to the code to rebuild it.  
+  - Run the **ROS 2 Offboard Control Example** provided on [**this page**](https://docs.px4.io/main/en/ros2/offboard_control.html) and try experimenting with the code. Remember to run `colcon build` each time you make changes to the code to rebuild it.  
   Also dont forget to **run QGC** when trying to run the PX4 simulation.
+
+---  
 
 ### Tasks Completion
 
@@ -90,16 +112,20 @@ Use the guide below only if you are stuck.
   `source /opt/ros/humble/setup.bash`  
   `ros2 run turtlesim turtlesim_node`
 
+  ![alt text](img/turtlesim.png)
+
   Then open a new terminal, again **source the ROS 2** setup file and run:
 
   `ros2 topic list`
+
+  ![topic_list](img/topic_list.png)
 
   We can see, there is **/turtle1/pose** topic in the list.  
   Next, echo the values from the topic.
 
   `ros2 topic echo /turtle1/pose`
 
-  We can see the variables and values of the topic emitted are as below:  
+  We can see the variables of the topic emitted are as below:  
 
   `x: 5.306337833404541`  
   `y: 5.2459282875061035`  
@@ -111,30 +137,29 @@ Use the guide below only if you are stuck.
 
   `ros2 topic list -t`
 
-  We can see the message type of the `/turtle1/pose` topic is [**Pose**](http://docs.ros.org/en/noetic/api/turtlesim/html/msg/Pose.html).
-
-* /turtle1/pose [turtlesim/msg/Pose]
+  We can see the message type of the `/turtle1/pose` topic is [**Pose**](http://docs.ros.org/en/noetic/api/turtlesim/html/msg/Pose.html):  
+  _/turtle1/pose [turtlesim/msg/Pose]_
 
   With this information, we can **subscribe to the `/turtle1/pose` topic**, and use the values to publish and move the drone to the corresponding positions.
 
-  * Assuming you have the `~/ws_offboard_control` colcon workspace directory you created while trying the [**ROS 2 Offboard Control Example**](https://docs.px4.io/main/en/ros2/offboard_control.html) before, **open a new terminal.**  
+- Assuming you have the `~/ws_offboard_control` colcon workspace directory you created while trying the [**ROS 2 Offboard Control Example**](https://docs.px4.io/main/en/ros2/offboard_control.html) before, **open a new terminal.**  
 
   Note: This guide uses **Python** for the development.  
-  *Visit ROS 2 humble website if you want to use C++ instead.*
+  _Visit ROS 2 humble website if you want to use C++ instead._
 
-1. In the new terminal, source the ROS 2 setup and enter the off_board_control's src folder :  
+1. In the new terminal, source the ROS 2 setup and enter the offboard_control's src folder :  
 
-    * `source /opt/ros/humble/setup.bash`  
+    - `source /opt/ros/humble/setup.bash`  
 
-    * `cd ~/ws_offboard_control/src/`
+    - `cd ~/ws_offboard_control/src/`
 
 2. Create a new package and name it as **control_py**.  
 
-    * `ros2 pkg create --build-type ament_python --license Apache-2.0 control_py`
+    - `ros2 pkg create --build-type ament_python --license Apache-2.0 control_py`
 
 3. Open the workspace using your preferred code editor.  
 
-    * `code .`
+    - `code .`
 
 4. In the **control_py** folder, setup the email, name and license in **package.xml** and **setup.py** according to the previous tutorial. (See notes below)
 
@@ -142,8 +167,8 @@ Use the guide below only if you are stuck.
 
 5. Enter into the `control_py` folder and create a new `controller.py` python file.
 
-    * control_py
-        * controller.py
+    - control_py
+        - controller.py
 
 6. Copy this [**offboard_control.py**](https://github.com/PX4/px4_ros_com/blob/main/src/examples/offboard_py/offboard_control.py) code from the **ROS 2 Offboard Control example** and paste it into **controller.py**.
 
@@ -202,7 +227,7 @@ Use the guide below only if you are stuck.
           def turtle_pose_callback(self, turtle_pose):
             self.turtle_pose = turtle_pose #Callback function for turtle1/pose topic subscriber.
   
-15. Lastly, we can modify the timer_callback code so that instead of making the drone take off and land after reaching the set height, we can configure it to hover at a fixed height. We would then control the drone's x and y positions and yaw angle using the values obtained from the turtlesim pose.
+15. Lastly, we can modify the timer_callback code so that instead of making the drone take off and land after reaching the set height, we can configure it to hover at a fixed height. We would then control the drone's x and y positions and yaw angle using the values obtained from the turtlesim pose. We also needs to comment the land() function from being called so that the drone will always hover.
 
       ```python
           def timer_callback(self) -> None:
@@ -217,9 +242,9 @@ Use the guide below only if you are stuck.
             self.publish_position_setpoint(
                 self.turtle_pose.x, self.turtle_pose.y, self.takeoff_height, self.turtle_pose.theta)
 
-        elif self.vehicle_local_position.z <= self.takeoff_height:
-            self.land()
-            exit(0)
+        #elif self.vehicle_local_position.z <= self.takeoff_height:
+            #self.land()
+            #exit(0)
 
         if self.offboard_setpoint_counter < 11:
             self.offboard_setpoint_counter += 1
@@ -227,6 +252,8 @@ Use the guide below only if you are stuck.
 16. Save the code, and build the package using `colcon build`. Make sure you are in the root folder of the workspace, outside the src folder.
 
     `colcon build --packages-select control_py`
+
+    ![colcon_build](img/colcon_build.png)
 
 17. If the build succeeds, open a new terminal and navigate to the **ws_offboard_control** workspace.
 
@@ -275,9 +302,9 @@ Use the guide below only if you are stuck.
 
 22. The drone in the PX4's Gazebo simulation should now start arming and takeoff until our set height. Now, head over to the turtle_teleop_key terminal and try to control the drone using the arrow key. You can also control the yaw of the drone by using G|B|V|C|D|E|R|T keys.
 
-![image-2](image-2.png)
+![image-2](img/image-2.png)
 
-*The image shows the drone simulation view from above. The drone's position moves according to the `turtle_teleop_key` controller, using values from the `turtle1/pose` topic in the turtlesim simulation. The drone's movement mirrors the turtle's movement in the turtlesim simulation.*
+_The image shows the drone simulation view from above. The drone's position moves according to the `turtle_teleop_key` controller, using values from the `turtle1/pose` topic in the turtlesim simulation. The drone's movement mirrors the turtle's movement in the turtlesim simulation._
 
 ### Task 2: Creating a custom uORB topics and using it to send custom values from ROS 2 to PX4
 
@@ -285,9 +312,8 @@ Instruction: Create custom uORB messages that can receive message from turtle1/p
 
 Briefing:  
 
-* Start by reading through PX4 official **middleware documentation**: <https://docs.px4.io/main/en/middleware/uorb.html>  
+- Start by reading through PX4 official **middleware documentation**: <https://docs.px4.io/main/en/middleware/uorb.html>  
 
-* Focus on the [Adding a new topic](https://docs.px4.io/main/en/middleware/uorb.html#adding-a-new-topic) section.
+- Focus on the [Adding a new topic](https://docs.px4.io/main/en/middleware/uorb.html#adding-a-new-topic) section.
 
 Step by step:
-
