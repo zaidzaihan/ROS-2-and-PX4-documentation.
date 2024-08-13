@@ -310,9 +310,11 @@ Use the guide below only if you are stuck.
 
 _The image shows the drone simulation view from above. The drone's position moves according to the `turtle_teleop_key` controller, using values from the `turtle1/pose` topic in the turtlesim simulation. The drone's movement mirrors the turtle's movement in the turtlesim simulation._
 
+---  
+
 ### Task 2: Creating a custom uORB topics and using it to send custom values from ROS 2 to PX4
 
-Instruction: Create custom uORB messages that can receive message from turtle1/pose topic and displays it into PX4 shell/terminal or QGC Mavlink console.
+Instruction: Create custom uORB messages that can **receive message from turtle1/pose topic** and **displays it** into PX4 shell/terminal or QGC Mavlink console.
 
 Briefing:  
 
@@ -320,4 +322,165 @@ Briefing:
 
 - Focus on the [Adding a new topic](https://docs.px4.io/main/en/middleware/uorb.html#adding-a-new-topic) section.
 
+- As we use ROS 2 node to send data to PX4, we need to use µXRCE-DDS to bridge between the two. Head over to <https://docs.px4.io/main/en/middleware/uxrce_dds.html#supported-uorb-messages> for more info.
+
 Step by step:
+
+1. First, we need to see the interface of the `turtle1/pose` topic so that we can struct the uORB msg file accordingly. Start by opening a new terminal, source the ROS 2 environment and **run the turtlesim node**.  
+      `source /opt/ros/humble/setup.bash`  
+      `ros2 run turtlesim turtle_teleop_key`  
+
+      ![teleop_key](img/turtle_node.png)
+
+2. Next open a new terminal, source the workspace and list all running nodes and their types:
+      `ros2 topic list -t`  
+
+      ![list_type](img/list_type.png)
+
+3. Now use the command **_ros2 interface show <msg_type>_** to view the topic's interface:
+      `ros2 interface show turtlesim/msg/Pose`
+
+      ![interface](img/interface.png)
+
+4. We can now see the structure of the 'Pose' topic that we can use to put into our custom uORB msg. To start creating the msg, open PX4-Autopilot/msg folder.
+      ![msg_folder](img/px4_msg.png)
+
+5. Inside the msg folder, create a new file and name it into `Test.msg`.
+
+6. Next, open CMakeLists.txt file, and put the Test.msg file name into the list where all the other msgs is in.
+      ![testcmake](img/Testcmake.png)
+
+7. Now, open the Test.msg file, and structure the message according to the turtlesim's pose interface.
+      ![pose_test](img/pose_test.png)
+
+8. Copy the Test.msg file and head over to your ROS 2 workspace and go to src folder.  
+(Any workspace is permissible as long as you have/imported px4_msgs package into the workspace).
+
+9. Head over to px4_msgs package, open it's msg folder and paste the Test.msg file into it.
+      ![px4_msgs_test](img/px4_msgs_test.png)
+
+10. Open the workspace root folder in the terminal, in this example ros2_ws, and colcon build the px4_msgs package:
+      `colcon build --packages-select px4_msgs`
+      ![colcon_px4_msgs](img/colcon_px4_msgs.png)
+
+11. Now head back to **PX4-Autopilot folder**. And go to:
+      `src/modules/uxrce_dds_client`
+      ![px4_microfolder](img/px4_microfolder.png)
+
+12. Open the `dds_topics.yaml` file. Since we are going to publish the Pose values msg to the PX4, PX4 needs to subscribe to the uORB message. Under the "subscriptions: " section, put the custom uORB msg that we created early using the following format for the topic and type:
+      ![dds_topic_test](img/dds_topic_test.png)
+
+13. Save the file. Now we need to create a ROS 2 node to handle the publishing of `/turtle1/pose` and publish it to the `/fmu/in/test` topic. Open the previous ROS 2 PX4 workspace and create a new package called "posepub":  
+      `ros2 pkg create --build-type ament_python --license Apache-2.0 posepub`
+  
+14. Set up the `package.xml` and `setup.py` as usual, and create a python module inside the posepub file. For this example, the module is named as posepub.py.
+      - posepub  
+          - posepub.py
+
+15. Open the posepub.py module using your preferred IDE, and begin importing the necessaries library/module and our custom PX4 uORB message:
+
+      ```python
+          import rclpy
+          from rclpy.clock import Clock
+          from rclpy.node import Node
+          from px4_msgs.msg import Test
+          from turtlesim.msg import Pose
+
+16. Next, we create a class, `PosePublisher`, that inherits from `Node`. In this class, we set up a subscriber to the `turtlesim`'s `pose` topic, which updates local variables with the turtle's position and orientation. These variables are then assigned to our custom `Test` message. We also establish a publisher to send this message to the `/fmu/in/test` topic, periodically publishing the updated pose data.
+
+      ```python
+              class PosePublisher(Node):
+                  def __init__(self):
+                      super().__init__("uorb_publisher")
+
+                      self.subscriber = self.create_subscription(Pose, 'turtle1/pose', self.pose_callback, 10)
+                      self.publisher = self.create_publisher(Test, '/fmu/in/test', 10)
+                      self.x = 0.0
+                      self.y = 0.0
+                      self.theta = 0.0
+                      self.linear_velocity = 0.0
+                      self.angular_velocity = 0.0
+                      timer_period = 2.0
+                      self.create_timer(timer_period, self.timer_callback)
+
+                  def timer_callback(self):
+                      msg = Test()
+                      msg.x = self.x
+                      msg.y = self.y 
+                      msg.theta = self.theta
+                      msg.linear_velocity = self.linear_velocity
+                      msg.angular_velocity = self.angular_velocity
+                      msg.timestamp = int(Clock().now().nanoseconds / 1000)
+                      self.publisher.publish(msg)
+                      
+
+                  def pose_callback(self, msg):
+                      self.x = msg.x
+                      self.y = msg.y
+                      self.theta = msg.theta
+                      self.linear_velocity = msg.linear_velocity
+                      self.angular_velocity = msg.angular_velocity
+                      self.get_logger().info(f"Message sent!")
+
+              def main(args=None):
+                  rclpy.init(args=args)
+                  uorbPub = PosePublisher()
+                  rclpy.spin(uorbPub)
+                  uorbPub.destroy_node()
+                  rclpy.shutdown()
+
+              if __name__ == "__main__":
+                  try:
+                      main()
+                  except Exception as e:
+                      print(e)
+
+17. Save the file. Now open the `setup.py` and create an entry point for our node's module, in this case:
+
+      ```python
+                  entry_points={
+        'console_scripts': [
+            'posepub = posepub.posepub:main'
+        ],
+    },
+
+18. Save the file and open the root of this workspace in a terminal. Colcon build the package:
+    `colcon build --packages-select posepub`
+
+    ![posepub_build](img/posepub_build.png)
+
+19. If there is no error, proceed to a new terminal and build the PX4 using make:  
+    `cd ~/PX4-Autopilot`  
+    `make px4_sitl gz_x500`
+
+20. Open two new termnial and run MicroXRCE Agent and also QGroundControl.
+
+21. Open a new terminal and run ROS 2 turtlesim's turtlesim_node:  
+    `ros2 run turtlesim turtlesim_node`
+
+22. Finally, navigate to the root folder of our workspace, source the local setup and then run the node.
+    `source install/local_setup.bash`  
+    `ros2 run posepub posepub`
+
+    ![all_posepub](img/all_posepub.png)
+
+23. Now head over to the terminal that we use to run the PX4 simulation, and in the terminal, use `uorb status` command to view the list of all uorb messages being received by the PX4. Check the uORB list to see if our test message is being received.
+
+    ![test_uorb](img/test_uorb.png)
+
+24. If our test msg is being displayed in the list, we can then see the values being received by using `listener <topic_name>` command:  
+
+    `listener test`
+    ![listener_test](img/listener_test.png)
+
+- With this, we can confirm that our uORB topic is successfully receiving the values from the /turtle1/pose topic in the turtlesim node!
+
+---  
+
+### Task 3: **Develop Mavlink message for the custom uORB topics** and use it to **send the uORB message**
+
+Instruction: develop Mavlink message and use it to publish the value from the Test uORB message.
+Verify the Mavlink is being published by using Wireshark with a custom WLua plugin.
+
+- Since PX4 documentation is very good at explaining, try using this [official documentation](https://docs.px4.io/main/en/middleware/mavlink.html).  
+- Follow the [Streaming Mavlink Messages](https://docs.px4.io/main/en/middleware/mavlink.html#streaming-mavlink-messages) guide tutorial but instead of using  BATTERY_STATUS_DEMO, create [a new custom mavlink message](https://docs.px4.io/main/en/middleware/mavlink.html#custom-mavlink-messages) to handle the test topic and use it to follow the tutorial.
