@@ -1,6 +1,6 @@
 # Beginner guide to ROS 2 for PX4 development  
 
-## This guide specifies the tasks needed to kick-start your PX4 development journeys using ROS 2
+## This guide outlines the steps to begin your PX4 development journey with ROS 2
 
 ### Prerequisites
 
