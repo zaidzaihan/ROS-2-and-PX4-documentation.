@@ -335,12 +335,12 @@ Step by step:
 
       ![teleop_key](img/turtle_node.png)
 
-2. Next open a new terminal, source the workspace and list all running nodes and their types:
+2. Next open a new terminal, source the workspace and list all running nodes and their types:  
       `ros2 topic list -t`  
 
       ![list_type](img/list_type.png)
 
-3. Now use the command **_ros2 interface show <msg_type>_** to view the topic's interface:
+3. Now use the command **_ros2 interface show <msg_type>_** to view the topic's interface:  
       `ros2 interface show turtlesim/msg/Pose`
 
       ![interface](img/interface.png)
@@ -449,7 +449,7 @@ Step by step:
     },
     ```
 
-18. Save the file and open the root of this workspace in a terminal. Colcon build the package:
+18. Save the file and open the root of this workspace in a terminal. Colcon build the package:  
     `colcon build --packages-select posepub`  
     ![posepub_build](img/posepub_build.png)
 
@@ -462,7 +462,7 @@ Step by step:
 21. Open a new terminal and run ROS 2 turtlesim's turtlesim_node:  
     `ros2 run turtlesim turtlesim_node`
 
-22. Finally, navigate to the root folder of our workspace, source the local setup and then run the node.
+22. Finally, navigate to the root folder of our workspace, source the local setup and then run the node.  
     `source install/local_setup.bash`  
     `ros2 run posepub posepub`
 
@@ -606,7 +606,6 @@ Right click on the folder and click on **open in terminal**.
     - After running the command, you should see a new mavlink_2_development.lua plugin file in the folder.  
 
     ![mavlink_plugin](img/mavlink_plugin.png)
-
 
 10. To import the plugin into Wireshark:
 
