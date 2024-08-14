@@ -96,7 +96,10 @@ Here are some task you should try in order to further grasp the concept of ROS 2
 3. **Develop Mavlink message for the custom uORB topics** and use it to **send the uORB message**. Analyze it by using WireShark to prove that the custom Mavlink is being sent.  
 
 **It is recommended for you to try finishing the above tasks by yourself first.**  
+
 Use the guide below only if you are stuck.
+
+---  
 
 ### Task 1: Extending turtlesim's turtle_teleop_key node's command to control drone simulation
 
@@ -434,6 +437,7 @@ Step by step:
                       main()
                   except Exception as e:
                       print(e)
+    ```
 
 17. Save the file. Now open the `setup.py` and create an entry point for our node's module, in this case:
 
@@ -443,6 +447,7 @@ Step by step:
             'posepub = posepub.posepub:main'
         ],
     },
+    ```
 
 18. Save the file and open the root of this workspace in a terminal. Colcon build the package:
     `colcon build --packages-select posepub`
@@ -479,8 +484,158 @@ Step by step:
 
 ### Task 3: **Develop Mavlink message for the custom uORB topics** and use it to **send the uORB message**
 
-Instruction: develop Mavlink message and use it to publish the value from the Test uORB message.
-Verify the Mavlink is being published by using Wireshark with a custom WLua plugin.
+Instruction: develop Mavlink message and use it to stream the value from the Test uORB message.
+Then, verify that the Mavlink is being streamed by using Wireshark with a custom WLua plugin.
 
+- Install `Wireshark` first on your machine.
 - Since PX4 documentation is very good at explaining, try using this [official documentation](https://docs.px4.io/main/en/middleware/mavlink.html).  
 - Follow the [Streaming Mavlink Messages](https://docs.px4.io/main/en/middleware/mavlink.html#streaming-mavlink-messages) guide tutorial but instead of using  BATTERY_STATUS_DEMO, create [a new custom mavlink message](https://docs.px4.io/main/en/middleware/mavlink.html#custom-mavlink-messages) to handle the test topic and use it to follow the tutorial.
+
+Note: We're gonna make a Mavlink with the name "POSE_VALUES" which will then receive the pose values from the Test uORB message and stream it.
+
+Step by step:  
+
+1. Open the PX4-Autopilot folder, and copy this `POSE_VALUES` message into the message section of `development.xml` in your PX4 source code, which will be located at:  
+`\src\modules\mavlink\mavlink\message_definitions\v1.0\development.xml`  
+
+    ```xml
+        <!-- custom mavlink to handle turtlesim's pose uORB message -->
+        <message id="45501" name="POSE_VALUES">
+            <description>Mavlink test message to handle custom uorb msg</description>
+            <field type="uint64_t" name="timestamp">Timestamp</field>
+            <field type="float" name="x">x value</field>
+            <field type="float" name="y">y value</field>
+            <field type="float" name="theta">theta value</field>
+            <field type="float" name="linear_velocity">linear velocity</field>
+            <field type="float" name="angular_velocity">angular velocity</field>
+        </message>
+
+2. Open the PX4-Autopilot and build the PX4 for sitl with `make px4_sitl` command and confirm that the associated message is generated in:  
+`/build/px4_sitl_default/mavlink/development/mavlink_pose_values.h`
+        ![mavlink_msg_pose_values](img/mavlink_msg_pose_values.png)
+
+3. Open the PX4-Autopilot folder using your preferred IDE, and head over to `/src/modules/mavlink/streams`.
+
+4. Inside the `streams` folder, create a new file named `POSE_VALUES.hpp`
+
+5. Add the headers for the uORB message to the top of the file (the required MAVLink headers should already be available):  
+`#include <uORB/topics/test.h>`
+
+6. Copy the streaming class below into the file:
+
+    ```hpp
+        class MavlinkStreamPoseValues : public MavlinkStream
+        {
+        public:
+            static MavlinkStream *new_instance(Mavlink *mavlink)
+            {
+                return new MavlinkStreamPoseValues(mavlink);
+            }
+            const char *get_name() const
+            {
+                return MavlinkStreamPoseValues::get_name_static();
+            }
+            static const char *get_name_static()
+            {
+                return "POSE_VALUES";
+            }
+            static uint16_t get_id_static()
+            {
+                return MAVLINK_MSG_ID_POSE_VALUES;
+            }
+            uint16_t get_id()
+            {
+                return get_id_static();
+            }
+            unsigned get_size()
+            {
+                return MAVLINK_MSG_ID_POSE_VALUES_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+            }
+
+        private:
+            // Subscription to a single-instance uORB topic
+            uORB::Subscription _pose_values_sub{ORB_ID(test)};
+
+            /* do not allow copying this class */
+            MavlinkStreamPoseValues(MavlinkStreamPoseValues &);
+            MavlinkStreamPoseValues& operator=(const MavlinkStreamPoseValues &);
+
+        protected:
+            explicit MavlinkStreamPoseValues(Mavlink *mavlink) : MavlinkStream(mavlink)
+            {}
+
+            bool send() override
+            {
+                test_s pose_values{};
+                if (_pose_values_sub.update(&pose_values))
+                {
+                    // Define the MAVLink message
+                    mavlink_pose_values_t pose_msg{};
+                    pose_msg.timestamp = pose_values.timestamp;
+                    pose_msg.x = pose_values.x;
+                    pose_msg.y = pose_values.y;
+                    pose_msg.theta = pose_values.theta;
+                    pose_msg.linear_velocity = pose_values.linear_velocity;
+                    pose_msg.angular_velocity = pose_values.angular_velocity;
+
+                    // Send the MAVLink message
+                    mavlink_msg_pose_values_send_struct(_mavlink->get_channel(), &pose_msg);
+                    return true;
+                }
+                return false;
+            }
+        };
+    ```
+
+    As stated by PX4 official documentation, the public section is 'near boilerplate'. For your own streaming classes these can just be copied and modified to match the values for your MAVLink message.
+    `Focus on the protected section`, under the the send(), we define the `pose_values` using our generated uORB struct header, which is `test_s`. More on this are explained on the [Official PX4 Mavlink documentation](https://docs.px4.io/main/en/middleware/mavlink.html#streaming-mavlink-messages)
+
+7. To stream the message by default, `open mavlink_main.cpp`. Navigate to the 'switch case' for **MAVLINK_MODE_NORMAL**, and add the following line within it:
+`configure_stream_local("POSE_VALUES", 0.2f);`
+
+    Now we need to create a WLua plugin using our `development.xml` message definition to test our Mavlink using Wireshark. Read PX4 documentation [here](https://docs.px4.io/main/en/middleware/mavlink.html#testing) for more info.
+
+8. Open our Mavlink Toolchain from our PX4-Autopilot folder,  
+`PX4-Autopilot/src/modules/mavlink/mavlink`  
+Right click on the folder and click on **open in terminal**.
+        ![mavlink_px4](img/mavlink_px4.png)
+
+9. As we want to build wireshark's WLua plugin for our development.xml, we can use this command:  
+
+    `python3 -m pymavlink.tools.mavgen --lang=WLua --wire-protocol=2.0 --output=mavlink_2_development message_definitions/v1.0/development.xml`
+
+    ![mavlink_command](img/mavlink_command.png)  
+    - After running the command, you should see a new mavlink_2_development.lua plugin file in the folder.  
+
+    ![mavlink_plugin](img/mavlink_plugin.png)
+
+
+10. To import the plugin into Wireshark:
+
+    1. Open Wireshark and follow the menu: Help > About Wireshark > Folders
+    2. Click on the "Personal Lua Plugin" location to create/open the wireshark Lua plugin's folder.
+    3. Copy our `mavlink_2_development.lua` file from the mavlink folder into the wireshark plugin's folder.
+    4. Check in Help > About > Wireshark > Plugins. You should find the plugin in the list.
+
+11. Now run every tools and node needed to test the Mavlink:
+    1. PX4_sitl
+    2. MicroXRCE Agent
+    3. QGroundControl
+    4. ROS 2 turtlesim_node
+    5. posepub node
+
+        ![run_mavlink](img/runmavlink.png)
+
+12. Run the wireshark application, and choose `loopback` as the capture interface.
+
+13. Capture the traffic for about 30 seconds and stop it.
+
+14. On the display filter, use this command:  
+`not icmp && mavlink_proto.POSE_VALUES_timestamp`
+
+    ![mavlinkpose_values](img/wiresharkpose_values.png)
+
+15. Click on any of the filtered packet, and click on Mavlink Protocol > Payload:
+    ![pose_payload](img/pose_payload.png)
+
+By confirming that the values being streamed are in the correct format, we have verifies that the Mavlink values is being streamed successfully.
