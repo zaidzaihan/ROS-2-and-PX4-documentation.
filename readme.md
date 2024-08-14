@@ -450,8 +450,7 @@ Step by step:
     ```
 
 18. Save the file and open the root of this workspace in a terminal. Colcon build the package:
-    `colcon build --packages-select posepub`
-
+    `colcon build --packages-select posepub`  
     ![posepub_build](img/posepub_build.png)
 
 19. If there is no error, proceed to a new terminal and build the PX4 using make:  
@@ -473,9 +472,8 @@ Step by step:
 
     ![test_uorb](img/test_uorb.png)
 
-24. If our test msg is being displayed in the list, we can then see the values being received by using `listener <topic_name>` command:  
+24. If our test msg is being displayed in the list, we can then see the values being received by using `listener <topic_name>` command:  `listener test`
 
-    `listener test`
     ![listener_test](img/listener_test.png)
 
 - With this, we can confirm that our uORB topic is successfully receiving the values from the /turtle1/pose topic in the turtlesim node!
